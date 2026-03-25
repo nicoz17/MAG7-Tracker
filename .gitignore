@@ -24,5 +24,11 @@ docs/*.out
 docs/*.synctex.gz
 docs/*.toc
 
+# Docs (private)
+docs/
+
+# Backup
+backend/main_backup.py
+
 # Env
 .env

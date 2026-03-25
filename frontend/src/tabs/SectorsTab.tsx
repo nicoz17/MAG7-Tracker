@@ -59,7 +59,7 @@ export function SectorsTab(props: SectorsTabProps) {
               { t: "VGT", desc: "Vanguard Information Technology — IT amplio", scope: "IT amplio" },
               { t: "IWM", desc: "Russell 2000 — Small caps de EE.UU.", scope: "Small Caps" },
               { t: "GLD", desc: "SPDR Gold Shares — Precio spot del oro", scope: "Commodities" },
-              { t: "TLT", desc: "iShares Treasury 20Y+ — Bonos largo plazo EE.UU.", scope: "Renta Fija" },
+              { t: "IEF", desc: "iShares Treasury 7-10Y — Bonos mediano plazo EE.UU.", scope: "Renta Fija" },
               { t: "LQD", desc: "iShares Investment Grade Corp — Bonos corporativos IG", scope: "Renta Fija" },
               { t: "XLE", desc: "SPDR Energy Select — Sector energético S&P 500", scope: "Energía" },
               { t: "XLF", desc: "SPDR Financial Select — Sector financiero S&P 500", scope: "Financiero" },
@@ -149,7 +149,7 @@ export function SectorsTab(props: SectorsTabProps) {
             <strong style={{ color: "#f0c27f" }}>Renta Variable:</strong>{" "}
             <strong>SPY</strong> = S&P 500 · <strong>QQQ</strong> = Nasdaq 100 · <strong>XLK</strong> = Tech · <strong>VGT</strong> = Vanguard IT · <strong>IWM</strong> = Small Caps · <strong>XLE</strong> = Energía · <strong>XLF</strong> = Financiero{" "}
             | <strong style={{ color: "#f0c27f" }}> Commodities:</strong> <strong>GLD</strong> = Oro{" "}
-            | <strong style={{ color: "#f0c27f" }}> Renta Fija:</strong> <strong>TLT</strong> = Treasury 20Y+ · <strong>LQD</strong> = Corp IG
+            | <strong style={{ color: "#f0c27f" }}> Renta Fija:</strong> <strong>IEF</strong> = Treasury 7-10Y · <strong>LQD</strong> = Corp IG
           </div>
         </>
       )}
