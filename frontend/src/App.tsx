@@ -6,6 +6,7 @@ import type {
   ViewMode, AppMode, FcstModel, EarningsHover,
 } from "./types";
 import { S } from "./styles";
+import { API_BASE } from "./api";
 import { getDefaultDates } from "./utils/helpers";
 import { EarningsTooltip } from "./components/EarningsTooltip";
 import { MacroPanel } from "./components/MacroPanel";
@@ -74,7 +75,7 @@ export default function App() {
   const [aiSummaryError,   setAiSummaryError]   = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/companies")
+    fetch(`${API_BASE}/api/companies`)
       .then(r => r.json())
       .then(d => { setCompanies(d); setSelected(new Set(Object.keys(d))); })
       .catch(() => setError("Could not load company list. Is the backend running?"));
@@ -86,7 +87,7 @@ export default function App() {
 
   // Macro: fetch once on mount, then every 60s
   useEffect(() => {
-    const load = () => fetch("/api/macro").then(r => r.json()).then(setMacroData).catch(() => {});
+    const load = () => fetch(`${API_BASE}/api/macro`).then(r => r.json()).then(setMacroData).catch(() => {});
     load();
     const id = setInterval(load, 60_000);
     return () => clearInterval(id);
@@ -98,7 +99,7 @@ export default function App() {
     setAiSummary(null);
     try {
       const p = new URLSearchParams({ ticker, start, end });
-      const r = await fetch(`/api/ai_summary?${p}`);
+      const r = await fetch(`${API_BASE}/api/ai_summary?${p}`);
       if (!r.ok) {
         const j = await r.json().catch(() => ({}));
         throw new Error(j.detail ?? "Error generando resumen");
@@ -124,7 +125,7 @@ export default function App() {
     try {
       const p  = new URLSearchParams({ tickers: Array.from(selected).join(","), start: startDate, end: endDate });
       const fp = new URLSearchParams({ tickers: Array.from(selected).join(","), start: startDate, end: endDate, band_pct: String(bandPct) });
-      const [pR, fR] = await Promise.all([fetch(`/api/prices?${p}`), fetch(`/api/forecast?${fp}`)]);
+      const [pR, fR] = await Promise.all([fetch(`${API_BASE}/api/prices?${p}`), fetch(`${API_BASE}/api/forecast?${fp}`)]);
       if (!pR.ok) { const b = await pR.json().catch(() => ({})); throw new Error(b.detail || `HTTP ${pR.status}`); }
       setData(await pR.json());
       if (fR.ok) setForecastData(await fR.json());
@@ -137,7 +138,7 @@ export default function App() {
     setTechLoading(true); setError(null); setTechData(null);
     try {
       const p = new URLSearchParams({ ticker: techTicker, start: startDate, end: endDate });
-      const r = await fetch(`/api/technical?${p}`);
+      const r = await fetch(`${API_BASE}/api/technical?${p}`);
       if (!r.ok) { const b = await r.json().catch(() => ({})); throw new Error(b.detail || `HTTP ${r.status}`); }
       setTechData(await r.json());
     } catch (e: any) { setError(e.message || "Failed to fetch technical"); }
@@ -148,7 +149,7 @@ export default function App() {
     setBacktestLoading(true); setBacktestData(null);
     try {
       const p = new URLSearchParams({ ticker, strategy, start: startDate, end: endDate });
-      const r = await fetch(`/api/backtest?${p}`);
+      const r = await fetch(`${API_BASE}/api/backtest?${p}`);
       if (!r.ok) { const b = await r.json().catch(() => ({})); throw new Error(b.detail || `HTTP ${r.status}`); }
       setBacktestData(await r.json());
     } catch (e: any) { setError(e.message || "Failed to fetch backtest"); }
@@ -158,7 +159,7 @@ export default function App() {
   const fetchNews = useCallback(async (ticker: string) => {
     setNewsLoading(true); setNewsData(null);
     try {
-      const r = await fetch(`/api/news?ticker=${ticker}`);
+      const r = await fetch(`${API_BASE}/api/news?ticker=${ticker}`);
       if (!r.ok) { const b = await r.json().catch(() => ({})); throw new Error(b.detail || `HTTP ${r.status}`); }
       setNewsData(await r.json());
     } catch (e: any) { setError(e.message || "Failed to fetch news"); }
@@ -171,7 +172,7 @@ export default function App() {
     setAnalyticsLoading(true); setError(null); setAnalyticsData(null);
     try {
       const p = new URLSearchParams({ tickers: Array.from(selected).join(","), start: startDate, end: endDate });
-      const r = await fetch(`/api/analytics?${p}`);
+      const r = await fetch(`${API_BASE}/api/analytics?${p}`);
       if (!r.ok) { const b = await r.json().catch(() => ({})); throw new Error(b.detail || `HTTP ${r.status}`); }
       setAnalyticsData(await r.json());
     } catch (e: any) { setError(e.message || "Failed to fetch analytics"); }
@@ -183,7 +184,7 @@ export default function App() {
     setFundamentalsLoading(true); setFundamentalsData(null);
     try {
       const p = new URLSearchParams({ tickers: Array.from(selected).join(",") });
-      const r = await fetch(`/api/fundamentals?${p}`);
+      const r = await fetch(`${API_BASE}/api/fundamentals?${p}`);
       if (!r.ok) { const b = await r.json().catch(() => ({})); throw new Error(b.detail || `HTTP ${r.status}`); }
       setFundamentalsData(await r.json());
     } catch (e: any) { setError(e.message || "Failed to fetch fundamentals"); }
@@ -210,7 +211,7 @@ export default function App() {
     setPortfolioLoading(true); setError(null); setPortfolioData(null);
     try {
       const p = new URLSearchParams({ tickers: tArr.join(","), weights: wArr.join(","), start: startDate, end: endDate });
-      const r = await fetch(`/api/portfolio?${p}`);
+      const r = await fetch(`${API_BASE}/api/portfolio?${p}`);
       if (!r.ok) { const b = await r.json().catch(() => ({})); throw new Error(b.detail || `HTTP ${r.status}`); }
       setPortfolioData(await r.json());
     } catch (e: any) { setError(e.message || "Failed to fetch portfolio"); }
@@ -222,7 +223,7 @@ export default function App() {
     setSectorLoading(true); setError(null); setSectorData(null);
     try {
       const p = new URLSearchParams({ start: startDate, end: endDate });
-      const r = await fetch(`/api/sectors?${p}`);
+      const r = await fetch(`${API_BASE}/api/sectors?${p}`);
       if (!r.ok) { const b = await r.json().catch(() => ({})); throw new Error(b.detail || `HTTP ${r.status}`); }
       setSectorData(await r.json());
     } catch (e: any) { setError(e.message || "Failed to fetch sectors"); }

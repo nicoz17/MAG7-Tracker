@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import type { CompanyInfo, MonthlyReturnsData } from "../types";
 import { S } from "../styles";
+import { API_BASE } from "../api";
 
 export function MonthlyHeatmap({ companies }: { companies: Record<string, CompanyInfo> }) {
   const [monthlyData, setMonthlyData] = useState<MonthlyReturnsData | null>(null);
@@ -11,7 +12,7 @@ export function MonthlyHeatmap({ companies }: { companies: Record<string, Compan
     setMonthlyLoading(true);
     setMonthlyData(null);
     try {
-      const r = await fetch(`/api/monthly_returns?ticker=${ticker}&years=5`);
+      const r = await fetch(`${API_BASE}/api/monthly_returns?ticker=${ticker}&years=5`);
       if (!r.ok) throw new Error();
       setMonthlyData(await r.json());
     } catch { /* silent */ } finally { setMonthlyLoading(false); }
