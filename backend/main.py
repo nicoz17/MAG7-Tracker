@@ -3,8 +3,13 @@ Magnificent 7 Stock Tracker - Backend API
 Entry point: uvicorn main:app
 """
 
+import os
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from routes.companies import router as companies_router
 from routes.prices import router as prices_router
@@ -26,6 +31,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# API routes
 app.include_router(companies_router)
 app.include_router(prices_router)
 app.include_router(technical_router)
@@ -36,6 +42,19 @@ app.include_router(macro_router)
 app.include_router(news_router)
 app.include_router(monthly_router)
 
+# Serve frontend static files in production
+DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+if DIST.is_dir():
+    app.mount("/assets", StaticFiles(directory=DIST / "assets"), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        """Serve index.html for all non-API routes (SPA fallback)."""
+        file = DIST / full_path
+        if file.is_file():
+            return FileResponse(file)
+        return FileResponse(DIST / "index.html")
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
