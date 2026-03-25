@@ -50,6 +50,29 @@ export function SectorsTab(props: SectorsTabProps) {
             </button>
           </div>
 
+          {/* ETF descriptions */}
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+            {([
+              { t: "SPY", desc: "S&P 500 — 500 mayores empresas de EE.UU.", scope: "Mercado amplio" },
+              { t: "QQQ", desc: "Nasdaq 100 — Top 100 no-financieras del Nasdaq", scope: "Growth / Tech" },
+              { t: "XLK", desc: "SPDR Technology Select — Sector tecnológico S&P 500", scope: "Sector Tech" },
+              { t: "VGT", desc: "Vanguard Information Technology — IT amplio", scope: "IT amplio" },
+              { t: "IWM", desc: "Russell 2000 — Small caps de EE.UU.", scope: "Small Caps" },
+            ] as const).map(({ t, desc, scope }) => (
+              <div key={t} style={{
+                background: "#12121c", border: "1px solid #1e1e2e", borderRadius: 10,
+                padding: "10px 14px", flex: "1 1 180px", minWidth: 170,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: sectorData.series[t]?.color || "#6b6b7b", flexShrink: 0 }} />
+                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 13, fontWeight: 700, color: sectorData.series[t]?.color || "#e8e6e3" }}>{t}</span>
+                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 9, color: "#3a3a4a", background: "#1a1a2a", padding: "2px 6px", borderRadius: 4 }}>{scope}</span>
+                </div>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, color: "#6b6b7b", lineHeight: 1.4 }}>{desc}</div>
+              </div>
+            ))}
+          </div>
+
           <div style={S.card}>
             <div style={S.cardTitle}>ÍNDICES DE REFERENCIA · BASE 100</div>
             <ResponsiveContainer width="100%" height={420}>
