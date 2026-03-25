@@ -18,6 +18,11 @@ SECTOR_ETFS = {
     "XLK": {"name": "Tech (XLK)",   "color": "#8b5cf6"},
     "VGT": {"name": "Vanguard IT",  "color": "#a78bfa"},
     "IWM": {"name": "Russell 2000", "color": "#ec4899"},
+    "GLD": {"name": "Gold (SPDR)",  "color": "#fbbf24"},
+    "TLT": {"name": "Treasury 20Y+","color": "#38bdf8"},
+    "LQD": {"name": "IG Corp Bonds","color": "#2dd4bf"},
+    "XLE": {"name": "Energy",       "color": "#f97316"},
+    "XLF": {"name": "Financials",   "color": "#22d3ee"},
 }
 
 MACRO_TICKERS = {

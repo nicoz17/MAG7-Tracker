@@ -58,6 +58,11 @@ export function SectorsTab(props: SectorsTabProps) {
               { t: "XLK", desc: "SPDR Technology Select — Sector tecnológico S&P 500", scope: "Sector Tech" },
               { t: "VGT", desc: "Vanguard Information Technology — IT amplio", scope: "IT amplio" },
               { t: "IWM", desc: "Russell 2000 — Small caps de EE.UU.", scope: "Small Caps" },
+              { t: "GLD", desc: "SPDR Gold Shares — Precio spot del oro", scope: "Commodities" },
+              { t: "TLT", desc: "iShares Treasury 20Y+ — Bonos largo plazo EE.UU.", scope: "Renta Fija" },
+              { t: "LQD", desc: "iShares Investment Grade Corp — Bonos corporativos IG", scope: "Renta Fija" },
+              { t: "XLE", desc: "SPDR Energy Select — Sector energético S&P 500", scope: "Energía" },
+              { t: "XLF", desc: "SPDR Financial Select — Sector financiero S&P 500", scope: "Financiero" },
             ] as const).map(({ t, desc, scope }) => (
               <div key={t} style={{
                 background: "#12121c", border: "1px solid #1e1e2e", borderRadius: 10,
@@ -141,12 +146,10 @@ export function SectorsTab(props: SectorsTabProps) {
           </div>
 
           <div style={S.info}>
-            <strong style={{ color: "#f0c27f" }}>Índices:</strong>{" "}
-            <strong>SPY</strong> = S&P 500 ·{" "}
-            <strong>QQQ</strong> = Nasdaq 100 (top 100 no-financiero) ·{" "}
-            <strong>XLK</strong> = SPDR Tech Sector ·{" "}
-            <strong>VGT</strong> = Vanguard IT ·{" "}
-            <strong>IWM</strong> = Russell 2000 (small caps)
+            <strong style={{ color: "#f0c27f" }}>Renta Variable:</strong>{" "}
+            <strong>SPY</strong> = S&P 500 · <strong>QQQ</strong> = Nasdaq 100 · <strong>XLK</strong> = Tech · <strong>VGT</strong> = Vanguard IT · <strong>IWM</strong> = Small Caps · <strong>XLE</strong> = Energía · <strong>XLF</strong> = Financiero{" "}
+            | <strong style={{ color: "#f0c27f" }}> Commodities:</strong> <strong>GLD</strong> = Oro{" "}
+            | <strong style={{ color: "#f0c27f" }}> Renta Fija:</strong> <strong>TLT</strong> = Treasury 20Y+ · <strong>LQD</strong> = Corp IG
           </div>
         </>
       )}
