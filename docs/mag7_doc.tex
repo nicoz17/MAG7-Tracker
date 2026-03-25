@@ -1,0 +1,799 @@
+% ============================================================
+%  MAG7 TRACKER — Documentación Técnica
+%  Para actualizar: editar este .tex y correr build.bat
+% ============================================================
+\documentclass[11pt, a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath, amssymb}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{multirow}
+\usepackage{tabularx}
+
+% ── Colores ───────────────────────────────────────────────
+\definecolor{gold}{HTML}{B07800}
+\definecolor{pink}{HTML}{C0304A}
+\definecolor{dark}{HTML}{1A1A2E}
+\definecolor{green}{HTML}{1A7A3C}
+\definecolor{red}{HTML}{C0392B}
+\definecolor{blue}{HTML}{1A5FA8}
+\definecolor{gray}{HTML}{555566}
+\definecolor{lightgray}{HTML}{CCCCDD}
+
+% ── Estilo de secciones ───────────────────────────────────
+\titleformat{\section}{\large\bfseries\color{pink}}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{gold}}{}{0em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{}{0em}{}
+
+% ── Header / Footer ───────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{gray}{MAG7 TRACKER · Documentación Técnica}}
+\fancyhead[R]{\small\textcolor{gray}{\thepage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{lightgray}\leaders\hrule height \headrulewidth\hfill}}
+
+% ── Cajas de fórmulas ─────────────────────────────────────
+\newtcolorbox{formulabox}[1][]{
+  enhanced, breakable,
+  colback=gold!10, colframe=gold!70,
+  coltitle=brown!60!black,
+  fonttitle=\small\bfseries,
+  title={#1}, arc=4pt, boxrule=0.6pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt
+}
+
+\newtcolorbox{infobox}[1][]{
+  enhanced, breakable,
+  colback=blue!7, colframe=blue!50,
+  coltitle=blue!60!black,
+  fonttitle=\small\bfseries,
+  title={#1}, arc=4pt, boxrule=0.6pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt
+}
+
+\newtcolorbox{warningbox}{
+  enhanced, colback=red!8, colframe=red!50,
+  arc=4pt, boxrule=0.6pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────
+\hypersetup{
+  colorlinks=true, linkcolor=gold, urlcolor=pink, citecolor=green,
+  pdftitle={MAG7 Tracker - Documentacion Tecnica},
+  pdfauthor={LarrainVial}
+}
+
+% ── Helpers ───────────────────────────────────────────────
+\newcommand{\tab}[1]{\textcolor{gold}{\textbf{[#1]}}}
+\newcommand{\api}[1]{\texttt{\textcolor{pink}{#1}}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+% ============================================================
+\begin{document}
+
+% ── Portada ───────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{3cm}
+  {\fontsize{36}{44}\selectfont\bfseries\textcolor{pink}{MAG 7}\par}
+  {\fontsize{36}{44}\selectfont\bfseries\textcolor{gold}{TRACKER}\par}
+  \vspace{0.8cm}
+  {\large\textcolor{gray}{Documentación Técnica}\par}
+  \vspace{0.4cm}
+  {\normalsize\textcolor{gray}{Magnificent Seven · Performance Analysis Platform}\par}
+  \vspace{2cm}
+  \rule{8cm}{0.4pt}
+  \vspace{1cm}
+
+  \begin{tabular}{ll}
+    \textcolor{gray}{Stack}    & FastAPI · React · TypeScript · Recharts \\[4pt]
+    \textcolor{gray}{Datos}    & Yahoo Finance API (tiempo real) \\[4pt]
+    \textcolor{gray}{Tickers}  & AAPL · MSFT · GOOGL · AMZN · NVDA · META · TSLA \\[4pt]
+    \textcolor{gray}{Versión}  & 2.0 \\
+  \end{tabular}
+
+  \vfill
+  {\small\textcolor{gray}{Para actualizar este documento, editar \texttt{mag7\_doc.tex} y ejecutar \texttt{build.bat}}}
+\end{titlepage}
+
+% ── Tabla de contenidos ───────────────────────────────────
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Arquitectura General}
+
+El MAG7 Tracker es una aplicación web de análisis financiero para las siete empresas tecnológicas más grandes del mundo (\textit{Magnificent Seven}). Está compuesta por:
+
+\begin{itemize}[leftmargin=1.5cm]
+  \item \textbf{Backend}: FastAPI (Python) corriendo en \code{localhost:8000}. Consume datos de Yahoo Finance, calcula todos los indicadores y métricas, y expone una REST API.
+  \item \textbf{Frontend}: React + TypeScript con Recharts para visualización. Corre en \code{localhost:5173} (Vite).
+  \item \textbf{Proxy}: Vite redirige \code{/api/*} al backend, evitando problemas de CORS.
+\end{itemize}
+
+\subsection{Endpoints de la API}
+
+\begin{tabularx}{\textwidth}{lX}
+  \toprule
+  \textbf{Endpoint} & \textbf{Descripción} \\
+  \midrule
+  \api{GET /api/companies}              & Lista de las 7 empresas con nombre y color \\
+  \api{GET /api/prices}                 & Precios históricos normalizados (Base 100 y Vol-Adj) \\
+  \api{GET /api/forecast}               & Pronóstico 30 días con 3 modelos estocásticos \\
+  \api{GET /api/technical}              & Indicadores técnicos + señales automáticas \\
+  \api{GET /api/analytics}              & Métricas de riesgo/retorno comparativas \\
+  \api{GET /api/fundamentals}           & Ratios de valoración (P/E, P/B, ROE, etc.) \\
+  \api{GET /api/backtest}               & Backtest de estrategias técnicas \\
+  \api{GET /api/portfolio}              & Análisis de portafolio + Tangent Portfolio \\
+  \api{GET /api/sectors}                & Comparativa por sectores del S\&P 500 \\
+  \api{GET /api/news}                   & Noticias recientes de Yahoo Finance \\
+  \api{GET /api/ai\_summary}            & Resumen cuantitativo automático (técnico + fundamental) \\
+  \bottomrule
+\end{tabularx}
+
+\newpage
+
+% ============================================================
+\section{Tab 1: Comparison}
+
+Compara la evolución histórica de los Mag7 en un mismo gráfico. Permite seleccionar empresas, rango de fechas y modo de visualización.
+
+\subsection{Base 100}
+
+Todos los precios se normalizan al valor 100 en la fecha de inicio:
+
+\begin{formulabox}[Normalización Base 100]
+  \[ P_t^{(100)} = 100 \cdot \frac{P_t}{P_{t_0}} \]
+  Donde $P_{t_0}$ es el precio en el primer día del período. Permite comparar retornos independientemente del precio absoluto.
+\end{formulabox}
+
+\subsection{Vol-Adjusted}
+
+Divide el retorno acumulado por la volatilidad anualizada, similar a normalizar por el riesgo asumido:
+
+\begin{formulabox}[Volatilidad Ajustada]
+  \[ P_t^{(\text{vol-adj})} = \frac{P_t^{(100)}}{\hat{\sigma} \cdot \sqrt{252}} \]
+  Donde $\hat{\sigma}$ es la desviación estándar de los log-retornos diarios. Penaliza a acciones muy volátiles.
+\end{formulabox}
+
+\subsection{Modelos de Pronóstico a 30 días}
+
+Al activar el forecast se proyectan 30 días hacia adelante con bandas de confianza. Se pueden elegir tres modelos:
+
+\subsubsection{GBM — Geometric Brownian Motion}
+
+\begin{formulabox}[GBM]
+  \[ S_{t+1} = S_t \cdot \exp\!\left[\left(\mu - \frac{\sigma^2}{2}\right)\Delta t + \sigma \sqrt{\Delta t}\, Z\right], \quad Z \sim \mathcal{N}(0,1) \]
+  \begin{itemize}
+    \item $\mu$: drift (media de log-retornos anualizados)
+    \item $\sigma$: volatilidad histórica anualizada
+    \item \textbf{Pro}: Simple, analítico, base del modelo Black-Scholes
+    \item \textbf{Con}: Asume volatilidad constante, ignora \textit{fat tails}
+  \end{itemize}
+\end{formulabox}
+
+\subsubsection{GARCH(1,1) — Volatilidad Condicional}
+
+\begin{formulabox}[{GARCH(1,1)}]
+  \[ \sigma_t^2 = \omega + \alpha \cdot \varepsilon_{t-1}^2 + \beta \cdot \sigma_{t-1}^2 \]
+  \begin{itemize}
+    \item La varianza de mañana depende del shock de hoy $(\varepsilon^2)$ y la varianza de ayer $(\sigma^2)$
+    \item Captura \textit{volatility clustering}: períodos de alta vol seguidos de alta vol
+    \item Parámetros $\{\omega, \alpha, \beta\}$ estimados por máxima verosimilitud
+    \item \textbf{Pro}: Más realista para series financieras
+    \item \textbf{Con}: No modela saltos bruscos
+  \end{itemize}
+\end{formulabox}
+
+\subsubsection{Merton Jump-Diffusion}
+
+\begin{formulabox}[Merton Jump-Diffusion]
+  \[ \frac{dS}{S} = (\mu - \lambda\kappa)\,dt + \sigma\,dW + J\,dN(\lambda) \]
+  \begin{itemize}
+    \item $dN(\lambda)$: proceso de Poisson con intensidad $\lambda$ (frecuencia de saltos)
+    \item $J \sim \mathcal{N}(\mu_J, \sigma_J^2)$: tamaño del salto en log-escala
+    \item Retornos con $|r| > 2.5\sigma$ se clasifican como ``saltos'' y se modelan por separado
+    \item \textbf{Pro}: Captura eventos extremos (\textit{fat tails}, crashes)
+    \item \textbf{Con}: Sensible al umbral de clasificación de saltos
+  \end{itemize}
+\end{formulabox}
+
+Las bandas de confianza se construyen con 1000 simulaciones Monte Carlo; se reportan los percentiles 10 y 90 (para CI=80\%).
+
+\newpage
+
+% ============================================================
+\section{Tab 2: Technical}
+
+Análisis técnico individual de cada stock. Incluye indicadores clásicos, señales automáticas, backtesting y noticias.
+
+\subsection{Indicadores de Precio}
+
+\subsubsection{SMA — Simple Moving Average}
+
+\begin{formulabox}[{SMA(n)}]
+  \[ \text{SMA}_t(n) = \frac{1}{n} \sum_{i=0}^{n-1} P_{t-i} \]
+  Se calculan tres períodos: \textbf{20 días} (corto), \textbf{50 días} (medio), \textbf{200 días} (largo plazo). Suavizan el ruido y revelan la tendencia subyacente.
+\end{formulabox}
+
+\subsubsection{Bollinger Bands — BB(20, $\pm 2\sigma$)}
+
+\begin{formulabox}[Bollinger Bands]
+  \begin{align}
+    \text{BB}^{\text{mid}}_t  &= \text{SMA}_t(20) \\
+    \text{BB}^{\text{upper}}_t &= \text{BB}^{\text{mid}}_t + 2 \cdot \hat{\sigma}_t(20) \\
+    \text{BB}^{\text{lower}}_t &= \text{BB}^{\text{mid}}_t - 2 \cdot \hat{\sigma}_t(20)
+  \end{align}
+  El 95\% de los precios debería quedar dentro de las bandas bajo distribución normal. Precio en banda superior = posible sobrecompra; en banda inferior = posible sobreventa.
+\end{formulabox}
+
+\subsection{Indicadores de Momentum}
+
+\subsubsection{RSI(14) — Relative Strength Index}
+
+\begin{formulabox}[RSI de Wilder]
+  \[ \text{RSI}_t = 100 - \frac{100}{1 + RS_t}, \quad RS_t = \frac{\overline{G}_{14}}{\overline{L}_{14}} \]
+  Donde $\overline{G}_{14}$ y $\overline{L}_{14}$ son la media exponencial de ganancias y pérdidas de 14 días (EMA de Wilder: $\alpha = 1/14$).
+  \begin{itemize}
+    \item RSI $> 70$: \textbf{sobrecompra} — momentum agotado
+    \item RSI $< 30$: \textbf{sobreventa} — posible rebote
+    \item RSI = 50: zona neutral
+  \end{itemize}
+\end{formulabox}
+
+\subsubsection{MACD(12, 26, 9) — Moving Average Convergence Divergence}
+
+\begin{formulabox}[MACD]
+  \begin{align}
+    \text{MACD}_t      &= \text{EMA}_{12}(P) - \text{EMA}_{26}(P) \\
+    \text{Signal}_t    &= \text{EMA}_9(\text{MACD}) \\
+    \text{Hist}_t      &= \text{MACD}_t - \text{Signal}_t
+  \end{align}
+  \begin{itemize}
+    \item \textbf{Cruce alcista}: MACD cruza sobre la señal → impulso positivo
+    \item \textbf{Cruce bajista}: MACD cruza bajo la señal → impulso negativo
+    \item \textbf{Histograma verde}: momentum alcista creciente
+    \item \textbf{Histograma rojo}: momentum bajista creciente
+  \end{itemize}
+\end{formulabox}
+
+\subsection{Earnings Markers}
+
+Los resultados trimestrales (EPS) se marcan en los gráficos con un triángulo dorado (\textbf{E}). Al hacer hover se despliega:
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Campo} & \textbf{Descripción} \\
+  \midrule
+  Date           & Fecha del reporte \\
+  EPS Estimate   & Consenso de analistas (dólares por acción) \\
+  EPS Actual     & EPS reportado por la empresa \\
+  EPS Surprise   & $\frac{\text{Actual} - \text{Estimate}}{\text{Estimate}} \times 100\%$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Verde = superó estimados; Rojo = no alcanzó estimados.
+
+\subsection{Señales Técnicas Automáticas}
+
+Al cargar el análisis, el sistema detecta automáticamente señales basadas en los indicadores más recientes:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{llX}
+  \toprule
+  \textbf{Indicador} & \textbf{Condición} & \textbf{Señal} \\
+  \midrule
+  RSI & $< 30$ & \textcolor{green}{$\blacktriangle$} Bullish fuerte: sobreventa \\
+  RSI & $30$--$40$ & \textcolor{gold}{$\blacktriangleright$} Bullish débil: momentum bajo \\
+  RSI & $> 70$ & \textcolor{red}{$\blacktriangledown$} Bearish fuerte: sobrecompra \\
+  RSI & $60$--$70$ & \textcolor{gold}{$\blacktriangleright$} Bearish débil: cerca de sobrecompra \\
+  \midrule
+  MACD & Cruza sobre señal & \textcolor{green}{$\blacktriangle$} Bullish fuerte: cruce alcista \\
+  MACD & Cruza bajo señal  & \textcolor{red}{$\blacktriangledown$} Bearish fuerte: cruce bajista \\
+  MACD & Por encima señal  & \textcolor{gold}{$\blacktriangleright$} Bullish débil: momentum positivo \\
+  MACD & Por debajo señal  & \textcolor{gold}{$\blacktriangleright$} Bearish débil: momentum negativo \\
+  \midrule
+  SMA 50/200 & SMA50 cruza $\uparrow$ SMA200 & \textcolor{green}{$\bigstar$} Bullish fuerte: \textit{Golden Cross} \\
+  SMA 50/200 & SMA50 cruza $\downarrow$ SMA200 & \textcolor{red}{$\times$} Bearish fuerte: \textit{Death Cross} \\
+  \midrule
+  BB & Precio toca banda superior & \textcolor{red}{$\blacktriangledown$} Bearish fuerte: posible reversión \\
+  BB & Precio toca banda inferior & \textcolor{green}{$\blacktriangle$} Bullish fuerte: posible rebote \\
+  \midrule
+  Tendencia & Precio $> 10\%$ bajo SMA200 & \textcolor{red}{$\Downarrow$} Bearish fuerte: tendencia bajista \\
+  Tendencia & Precio $> 25\%$ sobre SMA200 & \textcolor{gold}{$\Uparrow$} Bearish débil: muy extendido \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+El resumen (Alcista/Bajista/Neutral) se calcula contando señales fuertes (peso 2) y débiles (peso 1).
+
+\subsection{Backtesting de Estrategias}
+
+Permite testear cuatro estrategias técnicas sobre el período histórico seleccionado:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{llX}
+  \toprule
+  \textbf{Estrategia} & \textbf{Entrada} & \textbf{Salida} \\
+  \midrule
+  RSI Mean Revert  & RSI cruza bajo 30  & RSI cruza sobre 70 \\
+  MACD Crossover   & MACD $>$ señal     & MACD $<$ señal \\
+  SMA Golden/Death & SMA50 $>$ SMA200   & SMA50 $<$ SMA200 \\
+  BB Mean Revert   & Precio $<$ BB lower & Precio $>$ BB middle \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\textbf{Supuestos del backtest:} solo posiciones largas (long/cash), sin apalancamiento, sin comisiones, ejecución al precio de cierre del día de la señal. Curva de equity base 100, comparada contra Buy \& Hold.
+
+\textbf{Métricas reportadas:}
+\begin{itemize}
+  \item \textbf{Retorno Estrategia vs B\&H}: retorno total de cada enfoque
+  \item \textbf{Exceso}: diferencia de retorno entre estrategia y Buy \& Hold
+  \item \textbf{Sharpe}: $(\bar{r} \cdot 252 - r_f) / (\hat{\sigma} \cdot \sqrt{252})$, con $r_f = 4.5\%$
+  \item \textbf{Max Drawdown}: caída máxima desde el pico de la curva de equity
+  \item \textbf{Win Rate}: porcentaje de trades ganadores
+  \item \textbf{Tiempo en Mercado}: porcentaje de días con posición abierta
+\end{itemize}
+
+\subsection{Resumen Cuantitativo Automático}
+
+Al pulsar \textbf{Resumen IA} el sistema genera un análisis de 4 oraciones en español sin llamadas externas. El endpoint \api{/api/ai\_summary} calcula todos los indicadores en el backend y construye el texto mediante lógica condicional determinista:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{llX}
+  \toprule
+  \textbf{Oración} & \textbf{Fuente} & \textbf{Contenido} \\
+  \midrule
+  1 — Tendencia  & RSI, MACD, SMA50/200, BB\%  & Diagnóstico técnico general \\
+  2 — Fundamentales & P/E, Rev.Growth, Margen, ROE & Calidad del negocio \\
+  3 — Riesgos    & RSI $>70$, P/E $>40$, deuda, sorpresa EPS & Alertas y riesgos actuales \\
+  4 — Sesgo      & Score ponderado de señales & Conclusión alcista/bajista/neutral \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+El resultado se cachea 5 minutos por ticker (\code{\_AI\_SUMMARY\_CACHE}) para evitar recalcular en cada petición.
+
+\newpage
+
+% ============================================================
+\section{Tab 3: Analytics}
+
+Análisis cuantitativo comparativo de todos los stocks seleccionados versus el S\&P 500 (SPY) como benchmark. Las secciones siguen una narrativa de valuación progresiva: consenso externo → modelo propio → score cuantitativo → riesgo/retorno → datos raw.
+
+\subsection{Precio Objetivo de Analistas}
+
+Muestra el consenso de precio objetivo de Wall Street para cada stock. Los datos se obtienen del módulo \code{financialData} de Yahoo Finance (\code{/api/fundamentals}, requiere pulsar \textbf{Load Fundamentals}).
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Campo} & \textbf{Descripción} \\
+  \midrule
+  Precio Actual       & Último precio de mercado \\
+  Objetivo Medio      & Media de los precios objetivo de analistas \\
+  Objetivo Máximo     & Estimación más optimista \\
+  Objetivo Mínimo     & Estimación más conservadora \\
+  Upside / Downside   & $(\text{Medio} - \text{Actual}) / \text{Actual} \times 100\%$ \\
+  Recomendación       & Consenso textual (Strong Buy / Buy / Hold / Sell) \\
+  N° Analistas        & Número de analistas que cubren el valor \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+La barra de rango visualiza el espectro mínimo--media--máximo en escala relativa, permitiendo ver la dispersión de opiniones.
+
+\subsection{DCF Interactivo}
+
+Modelo de Descuento de Flujos de Caja (DCF) de dos etapas con supuestos editables en tiempo real. Requiere \textbf{Load Fundamentals}.
+
+\begin{formulabox}[DCF de 2 Etapas — Fórmula General]
+\textbf{Proyección de FCF:}
+\[
+  \text{FCF}_t =
+  \begin{cases}
+    \text{FCF}_0 \cdot (1 + g_1)^t & t = 1, \ldots, 5 \\
+    \text{FCF}_5 \cdot (1 + g_2)^{t-5} & t = 6, \ldots, 10
+  \end{cases}
+\]
+\textbf{Valor Terminal (Gordon Growth):}
+\[
+  \text{TV} = \frac{\text{FCF}_{10} \cdot (1 + g_T)}{\text{WACC} - g_T}
+\]
+\textbf{Enterprise Value:}
+\[
+  \text{EV} = \sum_{t=1}^{10} \frac{\text{FCF}_t}{(1+\text{WACC})^t} + \frac{\text{TV}}{(1+\text{WACC})^{10}}
+\]
+\textbf{Precio intrínseco por acción:}
+\[
+  P^* = \frac{\text{EV} - \text{Deuda Neta}}{\text{Acciones en circulación}}
+\]
+\end{formulabox}
+
+\textbf{Supuestos por defecto} (derivados automáticamente de los datos TTM de Yahoo Finance):
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Parámetro} & \textbf{Default} & \textbf{Fuente} \\
+  \midrule
+  FCF Base          & Free Cash Flow TTM           & \code{financialData.freeCashflow} \\
+  $g_1$ (años 1--5) & Crecimiento de revenue TTM   & \code{financialData.revenueGrowth} \\
+  $g_2$ (años 6--10) & $g_1 / 2$                  & Fade automático \\
+  $g_T$ Terminal    & 2.5\%                        & Constante conservadora \\
+  WACC              & $r_f + \beta \times 5.5\%$   & CAPM ($r_f = 4.5\%$, ERP = 5.5\%) \\
+  Deuda Neta        & Deuda total $-$ Caja         & \code{totalDebt} $-$ \code{totalCash} \\
+  Acciones          & Shares outstanding           & \code{defaultKeyStatistics} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+El usuario puede ajustar todos los parámetros con sliders. El botón \textbf{Reset} restaura los valores derivados de los datos. El gráfico de barras muestra el valor presente de cada año (amarillo = años 1--5, rosa = años 6--10, violeta = valor terminal).
+
+\begin{warningbox}
+  Este modelo es solo orientativo. Los resultados dependen fuertemente de los supuestos de crecimiento y WACC. No constituye asesoramiento de inversión.
+\end{warningbox}
+
+\subsection{Score de Inversión}
+
+Cada acción recibe un puntaje de 0 a 100 basado en seis métricas cuantitativas (más un bono opcional de fundamentales):
+
+\begin{center}
+\begin{tabular}{llr}
+  \toprule
+  \textbf{Métrica} & \textbf{Lógica} & \textbf{Máx pts} \\
+  \midrule
+  Sharpe  & 0 pts si $\leq 0$; 20 pts si $\geq 2$; lineal intermedio & 20 \\
+  Alpha   & 0 pts si $\leq -10\%$; 20 pts si $\geq 15\%$ & 20 \\
+  Calmar  & 0 pts si $\leq 0$; 15 pts si $\geq 2$ & 15 \\
+  Sortino & 0 pts si $\leq 0$; 15 pts si $\geq 2$ & 15 \\
+  Max DD  & 15 pts si $\geq -5\%$; 0 pts si $\leq -60\%$ & 15 \\
+  Beta    & 15 pts si $0.7 \leq \beta \leq 1.2$ (sweet spot) & 15 \\
+  \midrule
+  \textit{Fundamentales (opcional)} & P/E + crecimiento + márgenes & \textit{15} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Rating: \textbf{\textcolor{green}{$\blacktriangle$ Buy}} $\geq 60/100$ · \textbf{\textcolor{gold}{$\blacktriangleright$ Hold}} $\geq 38/100$ · \textbf{\textcolor{red}{$\blacktriangledown$ Sell}} $< 38/100$.
+
+\subsection{Métricas de Riesgo/Retorno}
+
+\subsubsection{Retorno Total y Volatilidad Anualizada}
+
+\begin{formulabox}[Retorno y Volatilidad]
+  \[ r_{\text{total}} = \frac{P_T - P_0}{P_0} \times 100\%, \qquad \hat{\sigma}_{\text{ann}} = \hat{\sigma}_{\text{diaria}} \cdot \sqrt{252} \]
+  Donde $\hat{\sigma}_{\text{diaria}}$ es la desviación estándar de los log-retornos diarios $r_t = \ln(P_t/P_{t-1})$.
+\end{formulabox}
+
+\subsubsection{Sharpe Ratio}
+
+\begin{formulabox}[{Sharpe Ratio (con $r_f = 4.5\%$)}]
+  \[ \text{Sharpe} = \frac{\mu_{\text{ann}} - r_f}{\sigma_{\text{ann}}} \]
+  Mide el retorno extra por unidad de riesgo total. $> 1.5$ = excelente; $0.5$--$1.5$ = aceptable; $< 0.5$ = pobre.
+\end{formulabox}
+
+\subsubsection{Beta (CAPM)}
+
+\begin{formulabox}[Beta vs S\&P 500]
+  \[ \beta_i = \frac{\text{Cov}(r_i, r_{\text{SPY}})}{\text{Var}(r_{\text{SPY}})} \]
+  $\beta > 1$: más volátil que el mercado (amplifica movimientos). $\beta < 1$: más defensivo. $\beta = 1$: se mueve en línea con el mercado.
+\end{formulabox}
+
+\subsubsection{Alpha de Jensen}
+
+\begin{formulabox}[{Alpha (CAPM)}]
+  \[ \alpha_i = r_i - \left[r_f + \beta_i \cdot (r_m - r_f)\right] \]
+  Retorno que \textbf{no explica el mercado}. Alpha positivo = la acción generó retorno extra por encima de lo que predice su nivel de riesgo sistemático. $r_f = 4.5\%$, $r_m = $ retorno de SPY.
+\end{formulabox}
+
+\subsubsection{Max Drawdown}
+
+\begin{formulabox}[Maximum Drawdown]
+  \[ \text{MDD} = \min_{t \in [0,T]} \left(\frac{P_t}{\max_{\tau \leq t} P_\tau} - 1\right) \times 100\% \]
+  Caída máxima desde cualquier pico hasta el valle siguiente. Mide el peor escenario histórico para un inversor que compró en el máximo.
+\end{formulabox}
+
+\subsubsection{Calmar Ratio}
+
+\begin{formulabox}[Calmar Ratio]
+  \[ \text{Calmar} = \frac{r_{\text{ann}}}{|\text{MDD}|} \]
+  Retorno anualizado por unidad de máximo drawdown. $> 1$ = bueno; $> 2$ = excelente.
+\end{formulabox}
+
+\subsubsection{Sortino Ratio}
+
+\begin{formulabox}[Sortino Ratio]
+  \[ \text{Sortino} = \frac{\mu_{\text{ann}} - r_f}{\sigma_{\text{down}} \cdot \sqrt{252}} \]
+  Donde $\sigma_{\text{down}}$ es la desviación estándar de los retornos \textbf{negativos solamente}. Penaliza únicamente la volatilidad bajista, a diferencia del Sharpe que penaliza toda volatilidad.
+\end{formulabox}
+
+\subsection{Análisis Automático de Insights}
+
+El sistema genera automáticamente 7 insights en texto:
+\begin{enumerate}
+  \item Mejor y peor desempeño del período
+  \item Mejor ratio riesgo/retorno (Sharpe)
+  \item Mayor y menor Alpha vs CAPM
+  \item Betas extremos (más agresivo vs más defensivo)
+  \item Par más y menos correlacionado (diversificación)
+  \item Mayor caída desde máximo (drawdown)
+  \item Mejor Sortino (volatilidad bajista)
+\end{enumerate}
+
+\subsection{Drawdown y Volatilidad Rodante}
+
+\begin{itemize}
+  \item \textbf{Drawdown acumulado}: gráfico temporal de la caída desde máximo para cada stock y SPY
+  \item \textbf{Volatilidad rodante 21d}: $\hat{\sigma}_t^{(21)} = \text{std}(r_{t-20}, \ldots, r_t) \cdot \sqrt{252}$, permite ver si la volatilidad aumentó o disminuyó en el tiempo
+\end{itemize}
+
+\subsection{Matriz de Correlación}
+
+Correlación de Pearson de los log-retornos diarios entre todos los stocks seleccionados:
+\[ \rho_{ij} = \frac{\text{Cov}(r_i, r_j)}{\hat{\sigma}_i \hat{\sigma}_j} \in [-1, 1] \]
+Visualizada como heatmap con escala de color: 0 = gris, 1 = dorado. Correlaciones altas implican menor diversificación entre esos dos activos.
+
+\subsection{Fundamentales}
+
+Datos obtenidos de Yahoo Finance (\code{quoteSummary}). Se muestran los principales ratios de valoración y calidad:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{llX}
+  \toprule
+  \textbf{Métrica} & \textbf{Sigla} & \textbf{Interpretación} \\
+  \midrule
+  P/E Trailing  & trailing\_pe & Precio / Ganancias últ. 12 meses. Bajo = barato \\
+  P/E Forward   & forward\_pe  & Precio / Ganancias proyectadas. Expectativa del mercado \\
+  P/B           & price\_to\_book & Precio / Valor libro. $> 1$ = mercado valora más que contable \\
+  EV/EBITDA     & ev\_to\_ebitda  & Múltiplo de empresa. Comparable entre empresas con distinto leverage \\
+  PEG           & peg\_ratio     & P/E / Crecimiento. $< 1$ sugiere subvaloración relativa \\
+  Rev. Growth   & revenue\_growth & Crecimiento YoY de ingresos \\
+  EPS Growth    & earnings\_growth & Crecimiento YoY de ganancias por acción \\
+  Profit Margin & profit\_margin  & Ganancia neta / ingresos \\
+  ROE           & roe            & Return on Equity: ganancia neta / patrimonio \\
+  Deuda/Capital & debt\_to\_equity & Apalancamiento. Alto = más riesgo financiero \\
+  Div. Yield    & dividend\_yield & Dividendo / precio. Relevante para inversión por renta \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Radar de Valuación}
+
+Visualización tipo \textit{spider chart} que compara todos los stocks seleccionados en 6 ejes simultáneamente. Cada eje se normaliza al rango $[0, 100]$ usando \textbf{min-max scaling} sobre los tickers disponibles:
+
+\[
+  x_{\text{norm}} = \frac{x - \min}{\max - \min} \times 100
+\]
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Eje} & \textbf{Fuente} & \textbf{Dirección favorable} \\
+  \midrule
+  Crecimiento    & Revenue growth YoY      & Mayor = mejor \\
+  Rentabilidad   & Profit margin           & Mayor = mejor \\
+  Valuación      & $100 - \text{EV/EBITDA normalizado}$ & Menor múltiplo = mejor \\
+  ROE            & Return on Equity        & Mayor = mejor \\
+  Momentum EPS   & EPS growth YoY          & Mayor = mejor \\
+  Calidad        & $100 - \text{Deuda/Capital normalizado}$ & Menor deuda = mejor \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+El radar permite identificar de un vistazo qué empresa lidera en cada dimensión y si alguna domina en múltiples frentes. Cada stock se representa con el color corporativo de la empresa.
+
+\newpage
+
+% ============================================================
+\section{Tab 4: Portfolio}
+
+Análisis de un portafolio personalizado con los stocks seleccionados, con pesos definidos por el usuario.
+
+\subsection{Portafolio Manual}
+
+El usuario asigna pesos porcentuales $w_i$ a cada acción ($\sum w_i = 100\%$). El retorno del portafolio es:
+\[ r_P = \sum_{i=1}^{N} w_i \cdot r_i \]
+
+Se muestran las métricas del portafolio (mismo set que Analytics) comparadas contra SPY.
+
+\subsection{Tangent Portfolio (Markowitz)}
+
+\begin{formulabox}[Portafolio Tangente]
+  El portafolio tangente es la combinación de pesos $\mathbf{w}^*$ que \textbf{maximiza el Sharpe ratio}:
+  \[ \mathbf{w}^* = \argmax_{\mathbf{w}} \frac{\mathbf{w}^T \boldsymbol{\mu} - r_f}{\sqrt{\mathbf{w}^T \boldsymbol{\Sigma} \mathbf{w}}} \]
+  Sujeto a $\mathbf{w} \geq 0$ y $\sum w_i = 1$.\\[6pt]
+  Donde $\boldsymbol{\mu}$ es el vector de retornos esperados (históricos anualizados) y $\boldsymbol{\Sigma}$ es la matriz de covarianzas de los retornos diarios, anualizada por $\times 252$.
+\end{formulabox}
+
+La optimización se resuelve numéricamente con \code{scipy.optimize.minimize} (método SLSQP). El resultado muestra los pesos óptimos y la curva de equity del portafolio teóricamente óptimo sobre el período histórico.
+
+\begin{infobox}[Nota importante]
+  Los pesos del Tangent Portfolio se calculan sobre datos históricos y no garantizan resultados futuros. Es una referencia para entender qué combinación hubiera maximizado el Sharpe en el pasado.
+\end{infobox}
+
+\newpage
+
+% ============================================================
+\section{Tab 5: Sectors}
+
+Compara la performance de los distintos sectores del S\&P 500 usando ETFs sectoriales como proxies:
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{ETF} & \textbf{Sector} & \textbf{Color} \\
+  \midrule
+  XLK  & Tecnología               & Azul \\
+  XLF  & Financiero               & Verde \\
+  XLV  & Salud                    & Rojo \\
+  XLE  & Energía                  & Naranja \\
+  XLI  & Industrial               & Gris azulado \\
+  XLY  & Consumo Discrecional     & Rosa \\
+  XLP  & Consumo Básico           & Verde claro \\
+  XLRE & Real Estate              & Marrón \\
+  XLU  & Utilities                & Violeta \\
+  XLB  & Materiales               & Verde oscuro \\
+  XLC  & Comunicaciones           & Naranja oscuro \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Todos los sectores se grafican en Base 100 para comparar su performance relativa en el período seleccionado. Incluye métricas básicas (Retorno, Volatilidad, Sharpe, Max DD) para cada sector.
+
+\newpage
+
+% ============================================================
+\section{Datos y Fuentes}
+
+\subsection{Yahoo Finance}
+
+Todos los datos provienen de Yahoo Finance a través de requests HTTP directos:
+
+\begin{itemize}
+  \item \textbf{Precios históricos}: \api{query1.finance.yahoo.com/v8/finance/chart/\{TICKER\}}
+  \item \textbf{Fundamentales}: \api{query1.finance.yahoo.com/v10/finance/quoteSummary/\{TICKER\}} con módulos \code{summaryDetail}, \code{defaultKeyStatistics}, \code{financialData}, \code{incomeStatementHistory}. Requiere autenticación por cookie (A3) + crumb.
+  \item \textbf{Earnings}: mismo endpoint, módulo \code{earningsHistory}
+  \item \textbf{Noticias}: \api{query1.finance.yahoo.com/v1/finance/search?q=\{TICKER\}\&newsCount=8}
+\end{itemize}
+
+\subsection{Autenticación Yahoo Finance (Crumb)}
+
+Yahoo Finance requiere un par cookie+crumb para llamadas a quoteSummary:
+\begin{enumerate}
+  \item Visitar \code{https://fc.yahoo.com} → establece cookie \code{A3}
+  \item Llamar \code{/v1/test/getcrumb} → devuelve el crumb como texto plano
+  \item Incluir \code{?crumb=\{crumb\}} en cada request de quoteSummary
+\end{enumerate}
+
+El crumb se cachea globalmente (\code{\_YF\_CRUMB}) para reutilizarlo en todas las llamadas de la sesión.
+
+\subsection{Cache y Performance}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Datos} & \textbf{Caché} \\
+  \midrule
+  Precios históricos  & Sin caché (request directo a Yahoo) \\
+  Noticias            & 30 minutos en memoria (\code{\_NEWS\_CACHE}) \\
+  Resumen cuantitativo & 5 minutos por ticker (\code{\_AI\_SUMMARY\_CACHE}) \\
+  Fundamentales       & Sin caché (Yahoo puede fallar) \\
+  Crumb Yahoo         & Toda la sesión (\code{\_YF\_CRUMB}) \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\newpage
+
+% ============================================================
+\section{Guía de Uso Rápido}
+
+\subsection{Comparison}
+\begin{enumerate}
+  \item Selecciona las empresas con los chips
+  \item Define el rango de fechas
+  \item Pulsa \textbf{Fetch Prices}
+  \item Activa \textbf{30D Forecast} para ver proyecciones. Cambia entre GBM, GARCH y Merton
+  \item Exporta a CSV con el botón \textbf{↓ CSV}
+\end{enumerate}
+
+\subsection{Technical}
+\begin{enumerate}
+  \item Selecciona el stock en el dropdown
+  \item Define el rango de fechas y pulsa \textbf{Analyze}
+  \item Activa/desactiva SMA20, SMA50, SMA200 y BB con los botones
+  \item Hover sobre los triángulos \textbf{E} para ver datos de earnings
+  \item Las señales automáticas aparecen bajo los gráficos
+  \item Elige una estrategia y pulsa \textbf{$\triangleright$ Run Backtest}
+\end{enumerate}
+
+\subsection{Analytics}
+\begin{enumerate}
+  \item Selecciona las empresas, define fechas, pulsa \textbf{Run Analytics}
+  \item Pulsa \textbf{Load Fundamentals} para activar las secciones de valuación
+  \item \textbf{Precio Objetivo de Analistas}: revisa el consenso de Wall Street y el upside implícito
+  \item \textbf{DCF Interactivo}: ajusta los sliders de crecimiento y WACC para ver el valor intrínseco estimado; compara con el precio actual
+  \item El \textbf{Score de Inversión} combina Sharpe, Alpha, Calmar, Sortino, Drawdown y Beta en un puntaje 0--100
+  \item Los \textbf{Insights automáticos} resumen los hallazgos clave del período
+  \item El \textbf{Radar de Valuación} permite comparar todos los stocks en 6 dimensiones simultáneas
+\end{enumerate}
+
+\subsection{Portfolio}
+\begin{enumerate}
+  \item Selecciona las empresas y define los pesos (\%)
+  \item Pulsa \textbf{Run Portfolio}
+  \item Compara tu portafolio vs SPY y vs el Tangent Portfolio
+\end{enumerate}
+
+\subsection{Sectors}
+\begin{enumerate}
+  \item Define el rango de fechas y pulsa \textbf{Fetch Sectors}
+  \item Compara la performance relativa de los 11 sectores del S\&P 500
+\end{enumerate}
+
+\newpage
+
+% ============================================================
+\section{Glosario}
+
+\begin{description}[style=nextline, leftmargin=3cm, font=\bfseries\color{gold}]
+  \item[Alpha ($\alpha$)] Retorno de una acción por encima de lo que predice el CAPM dado su nivel de beta. Mide la habilidad de un activo para generar valor independiente del mercado.
+  \item[Base 100] Normalización que fija el precio inicial en 100 para comparar retornos entre activos de distinto precio absoluto.
+  \item[Beta ($\beta$)] Sensibilidad del retorno de un activo a los movimientos del mercado. $\beta > 1$ amplifica; $\beta < 1$ amortigua.
+  \item[Bollinger Bands] Bandas estadísticas a $\pm 2\sigma$ alrededor de una SMA. Contienen el 95\% de los precios bajo normalidad.
+  \item[Buy \& Hold (B\&H)] Estrategia pasiva de comprar y mantener sin operar. Referencia de comparación para cualquier estrategia activa.
+  \item[Calmar Ratio] Retorno anualizado dividido por el máximo drawdown absoluto. Mide cuánto retorno se genera por cada unidad de caída máxima.
+  \item[Death Cross] SMA50 cruzando bajo SMA200. Señal técnica bajista de largo plazo.
+  \item[Drawdown] Caída porcentual desde el último máximo. Mide pérdidas en el tiempo para un inversor que compró en el pico.
+  \item[EPS] Earnings Per Share. Ganancia neta de la empresa dividida por el número de acciones en circulación.
+  \item[EV/EBITDA] Enterprise Value dividido por EBITDA. Múltiplo de valoración que permite comparar empresas con distinto apalancamiento.
+  \item[GARCH] Generalized Autoregressive Conditional Heteroskedasticity. Modelo que captura la variabilidad temporal de la volatilidad.
+  \item[GBM] Geometric Brownian Motion. Proceso estocástico clásico para modelar precios de acciones con drift y difusión constantes.
+  \item[Golden Cross] SMA50 cruzando sobre SMA200. Señal técnica alcista de largo plazo.
+  \item[MACD] Moving Average Convergence Divergence. Indicador de momentum basado en la diferencia entre EMAs de 12 y 26 días.
+  \item[Merton Jump-Diffusion] Extensión del GBM con saltos de Poisson. Captura eventos extremos (crashes, rallies).
+  \item[PEG Ratio] P/E dividido por la tasa de crecimiento de ganancias. PEG $< 1$ puede indicar subvaloración relativa.
+  \item[RSI] Relative Strength Index. Oscilador de momentum (0--100). $> 70$ = sobrecompra; $< 30$ = sobreventa.
+  \item[Sharpe Ratio] Retorno en exceso sobre la tasa libre de riesgo por unidad de volatilidad total.
+  \item[SMA] Simple Moving Average. Promedio aritmético de los últimos $n$ precios de cierre.
+  \item[Sortino Ratio] Variante del Sharpe que divide por la volatilidad bajista únicamente. Más justo para activos con retornos asimétricos positivos.
+  \item[Tangent Portfolio] Portafolio de máximo Sharpe Ratio en la frontera eficiente de Markowitz. Punto donde la Línea del Mercado de Capitales es tangente a la frontera.
+  \item[Vol-Adjusted] Retorno base-100 dividido por la volatilidad anualizada. Penaliza activos que generaron el mismo retorno con mayor riesgo.
+  \item[DCF] Discounted Cash Flow. Método de valoración que estima el valor intrínseco de una empresa descontando sus flujos de caja libres proyectados al presente usando el WACC.
+  \item[WACC] Weighted Average Cost of Capital. Tasa de descuento que pondera el costo de la deuda y el costo del patrimonio según la estructura de capital. Aquí se aproxima como $r_f + \beta \times \text{ERP}$ con ERP = 5.5\%.
+  \item[Free Cash Flow (FCF)] Flujo de caja libre. Caja generada por las operaciones del negocio después de capex. Es la base del modelo DCF.
+  \item[Valor Terminal (TV)] Valor presente de todos los flujos de caja más allá del período explícito de proyección (año 10), estimado con el modelo de crecimiento perpetuo de Gordon.
+  \item[ERP] Equity Risk Premium. Prima de riesgo del mercado accionario sobre la tasa libre de riesgo. Valor usado: 5.5\%.
+  \item[Precio Objetivo de Analistas] Estimación del precio futuro de una acción publicada por analistas de sell-side. El consenso es la media de todas las estimaciones activas.
+  \item[Radar de Valuación] Visualización tipo spider chart que compara múltiples activos en varias dimensiones simultáneas usando normalización min-max.
+  \item[Min-Max Scaling] Normalización que transforma un valor al rango $[0, 100]$: $x' = (x - \min) / (\max - \min) \times 100$.
+\end{description}
+
+\vfill
+\begin{center}
+  \textcolor{gray}{\small MAG7 Tracker · Documentación Técnica v2.0 · Para actualizar: editar \texttt{docs/mag7\_doc.tex} y correr \texttt{docs/build.bat}}
+\end{center}
+
+\end{document}
