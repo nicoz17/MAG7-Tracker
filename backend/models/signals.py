@@ -32,7 +32,7 @@ def _compute_signals(
                 "indicator": "RSI",
                 "type": "bullish",
                 "strength": "strong",
-                "icon": "\u0001f4c8",
+                "icon": "\U0001f4c8",
                 "title": "RSI Sobreventa",
                 "detail": f"RSI en {rsi_val:.1f} \u2014 zona de sobreventa extrema (<30)",
             })
@@ -41,7 +41,7 @@ def _compute_signals(
                 "indicator": "RSI",
                 "type": "bullish",
                 "strength": "weak",
-                "icon": "\u0001f4c8",
+                "icon": "\U0001f4c8",
                 "title": "RSI Zona Baja",
                 "detail": f"RSI en {rsi_val:.1f} \u2014 zona baja (30-40)",
             })
@@ -50,7 +50,7 @@ def _compute_signals(
                 "indicator": "RSI",
                 "type": "bearish",
                 "strength": "strong",
-                "icon": "\u0001f4c9",
+                "icon": "\U0001f4c9",
                 "title": "RSI Sobrecompra",
                 "detail": f"RSI en {rsi_val:.1f} \u2014 zona de sobrecompra extrema (>70)",
             })
@@ -59,7 +59,7 @@ def _compute_signals(
                 "indicator": "RSI",
                 "type": "bearish",
                 "strength": "weak",
-                "icon": "\u0001f4c9",
+                "icon": "\U0001f4c9",
                 "title": "RSI Zona Alta",
                 "detail": f"RSI en {rsi_val:.1f} \u2014 zona alta (60-70)",
             })
@@ -88,7 +88,7 @@ def _compute_signals(
                 "indicator": "MACD",
                 "type": "bullish",
                 "strength": "strong",
-                "icon": "\u0001f4c8",
+                "icon": "\U0001f4c8",
                 "title": "MACD Cruce Alcista",
                 "detail": "La l\u00ednea MACD cruz\u00f3 por encima de la se\u00f1al (cruce alcista)",
             })
@@ -97,7 +97,7 @@ def _compute_signals(
                 "indicator": "MACD",
                 "type": "bearish",
                 "strength": "strong",
-                "icon": "\u0001f4c9",
+                "icon": "\U0001f4c9",
                 "title": "MACD Cruce Bajista",
                 "detail": "La l\u00ednea MACD cruz\u00f3 por debajo de la se\u00f1al (cruce bajista)",
             })
@@ -106,7 +106,7 @@ def _compute_signals(
                 "indicator": "MACD",
                 "type": "bullish",
                 "strength": "weak",
-                "icon": "\u0001f4c8",
+                "icon": "\U0001f4c8",
                 "title": "MACD Positivo",
                 "detail": f"MACD por encima de la se\u00f1al (+{curr_diff:.4f})",
             })
@@ -115,7 +115,7 @@ def _compute_signals(
                 "indicator": "MACD",
                 "type": "bearish",
                 "strength": "weak",
-                "icon": "\u0001f4c9",
+                "icon": "\U0001f4c9",
                 "title": "MACD Negativo",
                 "detail": f"MACD por debajo de la se\u00f1al ({curr_diff:.4f})",
             })
@@ -171,7 +171,7 @@ def _compute_signals(
                 "indicator": "SMA",
                 "type": "bullish",
                 "strength": "weak",
-                "icon": "\u0001f4c8",
+                "icon": "\U0001f4c8",
                 "title": f"SMA50 > SMA200 (+{pct_diff:.1f}%)",
                 "detail": f"SMA50 ({curr_s50:.2f}) est\u00e1 {pct_diff:.1f}% por encima de SMA200 ({curr_s200:.2f})",
             })
@@ -180,7 +180,7 @@ def _compute_signals(
                 "indicator": "SMA",
                 "type": "bearish",
                 "strength": "weak",
-                "icon": "\u0001f4c9",
+                "icon": "\U0001f4c9",
                 "title": f"SMA50 < SMA200 ({pct_diff:.1f}%)",
                 "detail": f"SMA50 ({curr_s50:.2f}) est\u00e1 {abs(pct_diff):.1f}% por debajo de SMA200 ({curr_s200:.2f})",
             })
@@ -198,7 +198,7 @@ def _compute_signals(
                     "indicator": "BB",
                     "type": "bearish",
                     "strength": "strong",
-                    "icon": "\u0001f4c9",
+                    "icon": "\U0001f4c9",
                     "title": "Precio en Banda Superior BB",
                     "detail": f"Precio ({close_val:.2f}) cerca de la banda superior de Bollinger ({bb_upper_val:.2f})",
                 })
@@ -207,7 +207,7 @@ def _compute_signals(
                     "indicator": "BB",
                     "type": "bullish",
                     "strength": "strong",
-                    "icon": "\u0001f4c8",
+                    "icon": "\U0001f4c8",
                     "title": "Precio en Banda Inferior BB",
                     "detail": f"Precio ({close_val:.2f}) cerca de la banda inferior de Bollinger ({bb_lower_val:.2f})",
                 })
@@ -221,7 +221,7 @@ def _compute_signals(
                 "indicator": "Trend",
                 "type": "bearish",
                 "strength": "strong",
-                "icon": "\u0001f4c9",
+                "icon": "\U0001f4c9",
                 "title": f"Precio {abs(pct_vs_sma200):.1f}% bajo SMA200",
                 "detail": f"Precio ({close_val:.2f}) est\u00e1 {abs(pct_vs_sma200):.1f}% por debajo de SMA200 ({sma200_val:.2f})",
             })
